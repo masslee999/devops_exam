@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  # --- Service PostgreSQL ---
+  db-service:
+    image: postgres:15
+    container_name: db-service
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: always
+    healthcheck: # Vérifie automatiquement si le service (ici PostgreSQL) est prêt et fonctionnel.
+      test: ["CMD-SHELL", "pg_isready -U admin -d mydb"] #  Commande exécutée dans le conteneur pour tester la santé de la base de données.
+                                                         # 'pg_isready' vérifie si PostgreSQL accepte les connexions.
+                                                         # '-U admin' → se connecte avec l’utilisateur 'admin'
+                                                         # '-d mydb' → teste la disponibilité de la base 'mydb'
+      interval: 10s # Intervalle entre deux vérifications consécutives.
+      timeout: 5s # Temps maximum autorisé pour que le test réponde avant d’être considéré comme échoué.
+      retries: 5 # Nombre de tentatives consécutives d’échec avant de marquer le conteneur comme “unhealthy”.
+      start_period: 10s #Temps d’attente avant de commencer à exécuter le premier test (utile pour laisser PostgreSQL démarrer correctement).
+
+  # --- Service pgAdmin ---
+  pgadmin-service:
+    image: dpage/pgadmin4
+    container_name: pgadmin-service
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin1234
+    ports:
+      - "8081:80"
+    depends_on:
+      db-service:
+        condition: service_healthy
+    restart: always
+
+  # --- Service Django Backend ---
+  backend-service:
+    build: .
+    container_name: backend-service
+    depends_on:
+      db-service:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c "
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+    restart: always
+
+volumes:
+  postgres_data:
