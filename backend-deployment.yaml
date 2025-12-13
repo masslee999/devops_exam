@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    # ... (Partie supérieure non modifiée)
+    spec:
+      containers:
+        - name: backend
+          image: bassirouemanator/examen_backend:1.0 # Le tag que vous avez poussé
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_NAME
+              value: etudiants_db # CORRIGÉ pour PostgreSQL
+            - name: DATABASE_USER
+              value: admin # CORRIGÉ pour PostgreSQL
+            - name: DATABASE_PASSWORD
+              value: admin123 # CORRIGÉ pour PostgreSQL
+            - name: DATABASE_HOST
+              value: postgres-service # CORRIGÉ pour PostgreSQL
+            - name: SECRET_KEY
+              value: ton_secret_key

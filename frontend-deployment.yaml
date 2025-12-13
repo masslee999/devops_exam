@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    # ... (Partie supérieure non modifiée)
+    spec:
+      containers:
+        - name: frontend-container
+          image: bassirouemanator/examen_frontend:1.0 # CORRIGÉ : Votre image Docker Hub
+          ports:
+            - containerPort: 80 # CORRIGÉ : Port Nginx (80)
+          env:
+            - name: REACT_APP_BACKEND_URL
+              value: http://backend-service:8000 # Correct

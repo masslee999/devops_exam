@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service # Le nom stable pour l'accès externe
+spec:
+  type: NodePort # Permet l'accès depuis l'extérieur du cluster
+  selector:
+    app: frontend # Doit correspondre au label dans frontend-deployment.yaml
+  # ... (Partie supérieure non modifiée)
+  ports:
+    - protocol: TCP
+      port: 80 # Correct (port d'écoute du service)
+      targetPort: 80 # CORRIGÉ : Pointe vers le conteneur Nginx (port 80)
+      nodePort: 30080 # Correct (type NodePort demandé)
